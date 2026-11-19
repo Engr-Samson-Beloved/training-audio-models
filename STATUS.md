@@ -13,6 +13,10 @@
   fine-tune modes use separate configurations.
 - The Streamlit UI inspects a manifest/predictions pair and prominently warns whenever
   provenance is not `original`.
+- A zero-dependency local dashboard at `http://127.0.0.1:8765` shows dataset readiness,
+  installed tools, configurations, plots, fixture audio, and a safe simulation control.
+- `dist/standalone.html` provides the same visual overview without a server. It is read-only
+  and can be opened directly in a browser.
 - The SLR70 importer downloads the official archives sequentially with resumable partial
   files, verifies published SHA-256 values, blocks ZIP path traversal, derives and audits
   speaker IDs, records only source-supported metadata, and labels every row `public`.

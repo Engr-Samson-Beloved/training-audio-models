@@ -6,6 +6,7 @@ from cte442_asr.evaluation import evaluate_files
 from cte442_asr.fixture import make_fixture, smoke_predictions
 from cte442_asr.plots import plot_metrics
 from cte442_asr.split import write_splits
+from cte442_asr.webapp import project_status
 
 
 def test_complete_fixture_pipeline(tmp_path: Path):
@@ -24,4 +25,11 @@ def test_complete_fixture_pipeline(tmp_path: Path):
     plot_metrics(results / "utterance_metrics.csv", results / "plots")
     assert (results / "seed_summary.csv").exists()
     assert len(list((results / "plots").glob("*.svg"))) == 4
+
+
+def test_dashboard_status_is_provenance_separated():
+    status = project_status()
+    assert set(status["datasets"]) == {"fixture", "slr70", "original"}
+    assert status["datasets"]["fixture"]["corpus_kind"] == "fixture"
+    assert status["warning"]
 

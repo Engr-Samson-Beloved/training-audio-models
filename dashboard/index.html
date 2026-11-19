@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CTE 442 ASR Research Console</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">G2</span><span>CTE 442 Research Console</span></div>
+    <div class="tool-status" id="toolStatus">Checking local tools…</div>
+  </header>
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Speech recognition study</p>
+        <h1>Compare classical and pretrained speech models with clean provenance.</h1>
+        <p class="lede">Inspect datasets, verify the reproducible pipeline, and prepare experiments without confusing development data with the original Group 2 corpus.</p>
+      </div>
+      <button id="runFixture" class="primary">Run fixture simulation</button>
+    </section>
+
+    <aside class="warning"><strong>Research boundary</strong><span id="warningText">Fixture and public data are development-only.</span></aside>
+
+    <nav class="tabs" aria-label="Dashboard sections">
+      <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="datasets">Datasets</button>
+      <button class="tab" data-panel="experiments">Experiments</button>
+      <button class="tab" data-panel="results">Simulation</button>
+    </nav>
+
+    <section id="overview" class="panel active">
+      <div class="section-heading"><div><p class="eyebrow">Readiness</p><h2>Project at a glance</h2></div><button class="secondary" id="refresh">Refresh status</button></div>
+      <div class="cards" id="overviewCards"></div>
+      <div class="split-grid">
+        <article class="surface"><h3>Study comparison</h3><div class="pipeline">
+          <span>MFCC + GMM-HMM</span><span>CNN-BiLSTM CTC</span><span>wav2vec 2.0</span><span>Whisper-small</span>
+        </div></article>
+        <article class="surface"><h3>Fine-tuning ladder</h3><div class="hours"><b>1h</b><b>2h</b><b>5h</b><b>10h</b></div><p class="muted">Nested training subsets. Identical held-out speakers across every comparison.</p></article>
+      </div>
+    </section>
+
+    <section id="datasets" class="panel">
+      <div class="section-heading"><div><p class="eyebrow">Data lanes</p><h2>Strictly separated sources</h2></div></div>
+      <div class="dataset-grid" id="datasetCards"></div>
+      <article class="surface setup"><h3>SLR70 archive checklist</h3><div id="archiveChecklist"></div><code>SLR70_OFFLINE=1 ./scripts/run_slr70_public.sh</code></article>
+    </section>
+
+    <section id="experiments" class="panel">
+      <div class="section-heading"><div><p class="eyebrow">Configurations</p><h2>Independent experiment matrix</h2></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Experiment</th><th>Model</th><th>Mode</th><th>Seeds</th><th>Hours</th><th>LM ablation</th></tr></thead><tbody id="experimentRows"></tbody></table></div>
+    </section>
+
+    <section id="results" class="panel">
+      <div class="section-heading"><div><p class="eyebrow">Safe simulation</p><h2>Fixture pipeline inspection</h2></div><span class="badge amber">NOT ASR RESULTS</span></div>
+      <div id="runOutput" class="console">Run the fixture simulation to validate file flow, scoring, confidence intervals, and plots.</div>
+      <div class="plots" id="plots"></div>
+      <article class="surface"><h3>Fixture audio</h3><p class="muted">Synthetic tones only. These clips are not speech and never support research conclusions.</p><div id="audioList" class="audio-list"></div></article>
+    </section>
+  </main>
+  <footer>Local dashboard · data remains on this computer · Group 2 CTE 442</footer>
+  <script src="/app.js"></script>
+</body>
+</html>
+

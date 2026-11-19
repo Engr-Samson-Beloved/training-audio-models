@@ -1,0 +1,27 @@
+{
+  "project": "Group 2 CTE 442 Speech Recognition Research",
+  "warning": "Fixture and public data are development-only, never original-corpus findings.",
+  "datasets": {
+    "fixture": {"path":"data/fixture/manifest.csv","ready":true,"utterances":18,"speakers":9,"hours":0.002,"corpus_kind":"fixture"},
+    "slr70": {"path":"data/public/slr70/manifest.16k.csv","ready":false,"utterances":0,"speakers":0,"hours":0,"corpus_kind":""},
+    "original": {"path":"data/original/manifest.16k.csv","ready":false,"utterances":0,"speakers":0,"hours":0,"corpus_kind":""}
+  },
+  "slr70_archives": {"en_ng_female.zip":false,"en_ng_male.zip":false},
+  "experiments": [
+    {"file":"cnn_bilstm_ctc.toml","id":"cnn_bilstm_ctc","model":"cnn_bilstm_ctc","mode":"train","seeds":5,"hours":[],"lm_rescoring":[false,true]},
+    {"file":"mfcc_gmm_hmm.toml","id":"mfcc_gmm_hmm","model":"mfcc_gmm_hmm","mode":"train","seeds":5,"hours":[],"lm_rescoring":[false,true]},
+    {"file":"wav2vec2_finetune.toml","id":"wav2vec2_finetune","model":"wav2vec2","mode":"fine_tune","seeds":5,"hours":[1,2,5,10],"lm_rescoring":[false,true]},
+    {"file":"wav2vec2_zeroshot.toml","id":"wav2vec2_zeroshot","model":"wav2vec2","mode":"zero_shot","seeds":1,"hours":[],"lm_rescoring":[false,true]},
+    {"file":"whisper_small_finetune.toml","id":"whisper_small_finetune","model":"whisper_small","mode":"fine_tune","seeds":5,"hours":[1,2,5,10],"lm_rescoring":[false]},
+    {"file":"whisper_small_zeroshot.toml","id":"whisper_small_zeroshot","model":"whisper_small","mode":"zero_shot","seeds":1,"hours":[],"lm_rescoring":[false]}
+  ],
+  "tools": {"python3.12":true,"ffmpeg":true,"sox":true},
+  "fixture_results_ready": true,
+  "plots": ["/plots/wer_by_accent_region.svg","/plots/wer_by_gender.svg","/plots/wer_by_noise_condition.svg","/plots/wer_by_sentence_length.svg"],
+  "audio": [
+    {"utterance_id":"fx_00_00","transcript":"fixture alpha","url":"/audio/fx_00_00.wav"},
+    {"utterance_id":"fx_00_01","transcript":"fixture beta signal","url":"/audio/fx_00_01.wav"},
+    {"utterance_id":"fx_01_00","transcript":"fixture alpha","url":"/audio/fx_01_00.wav"},
+    {"utterance_id":"fx_01_01","transcript":"fixture beta signal","url":"/audio/fx_01_01.wav"}
+  ]
+}

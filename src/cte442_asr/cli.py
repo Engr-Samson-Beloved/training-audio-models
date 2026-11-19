@@ -20,6 +20,9 @@ def parser() -> argparse.ArgumentParser:
     original = sub.add_parser("import-original")
     original.add_argument("--source-manifest", required=True)
     original.add_argument("--destination", default="data/original/manifest.csv")
+    dashboard = sub.add_parser("dashboard")
+    dashboard.add_argument("--host", default="127.0.0.1")
+    dashboard.add_argument("--port", type=int, default=8765)
     validate = sub.add_parser("validate"); validate.add_argument("--manifest", required=True)
     validate.add_argument("--converted-dir", required=True); validate.add_argument("--report")
     validate.add_argument("--converted-manifest")
@@ -46,6 +49,9 @@ def main(argv=None) -> int:
         elif ns.command == "import-original":
             from .datasets.original import import_original
             print(import_original(ns.source_manifest, ns.destination))
+        elif ns.command == "dashboard":
+            from .webapp import main as dashboard_main
+            dashboard_main(["--host", ns.host, "--port", str(ns.port)])
         elif ns.command == "validate":
             from .audio import validate_and_convert
             report = ns.report or str(Path(ns.converted_dir) / "validation.csv")

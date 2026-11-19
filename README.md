@@ -27,6 +27,24 @@ cte442 plot --metrics results/fixture_smoke/utterance_metrics.csv --output-dir r
 Or run the same sequence with `./scripts/run_fixture.sh`. The fixture predictions are
 deliberately perturbed plumbing inputs, not the output of any ASR model.
 
+## Visual research console
+
+The local dashboard has no third-party Python dependencies and keeps all data on this
+computer. It displays dataset readiness, experiment configurations, fixture plots/audio,
+and can rerun the safe fixture simulation.
+
+```bash
+./scripts/launch_dashboard.sh
+# Open http://127.0.0.1:8765
+
+# Or open this directly without a server:
+open dist/standalone.html
+```
+
+FFmpeg and SoX are recommended for inspecting and converting real recordings. The core
+dashboard and fixture pipeline remain available without Streamlit or PyPI access.
+The standalone view is read-only; use `./scripts/run_fixture.sh` to rerun the simulation.
+
 ## Original-corpus workflow
 
 1. Obtain ethics/departmental approval and informed consent outside this repository.
