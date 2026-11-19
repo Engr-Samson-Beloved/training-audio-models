@@ -1,0 +1,13 @@
+experiment_id = "whisper_small_zeroshot"
+model = "whisper_small"
+mode = "zero_shot"
+language = "en"
+seeds = [11]
+split_column = "split"
+lm_rescoring = [false]
+
+[model_args]
+checkpoint = "openai/whisper-small"
+sample_rate = 16000
+task = "transcribe"
+

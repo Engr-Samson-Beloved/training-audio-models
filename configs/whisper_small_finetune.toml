@@ -1,0 +1,21 @@
+experiment_id = "whisper_small_finetune"
+model = "whisper_small"
+mode = "fine_tune"
+language = "en"
+seeds = [11, 22, 33, 44, 55]
+split_column = "split"
+hours = [1, 2, 5, 10]
+lm_rescoring = [false]
+
+[model_args]
+checkpoint = "openai/whisper-small"
+sample_rate = 16000
+task = "transcribe"
+
+[training]
+epochs = 10
+batch_size = 2
+learning_rate = 0.00001
+gradient_accumulation_steps = 8
+early_stopping_patience = 3
+

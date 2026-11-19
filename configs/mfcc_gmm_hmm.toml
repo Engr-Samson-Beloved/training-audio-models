@@ -1,0 +1,22 @@
+experiment_id = "mfcc_gmm_hmm"
+model = "mfcc_gmm_hmm"
+mode = "train"
+language = "en"
+seeds = [11, 22, 33, 44, 55]
+split_column = "split"
+lm_rescoring = [false, true]
+
+[model_args]
+sample_rate = 16000
+n_mfcc = 13
+delta_order = 2
+n_mixtures = 8
+states_per_phone = 3
+beam = 16
+lexicon_path = "resources/lexicon.txt"
+lm_path = "resources/lm.arpa"
+
+[training]
+epochs = 20
+early_stopping_patience = 3
+

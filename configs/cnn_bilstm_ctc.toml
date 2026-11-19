@@ -1,0 +1,24 @@
+experiment_id = "cnn_bilstm_ctc"
+model = "cnn_bilstm_ctc"
+mode = "train"
+language = "en"
+seeds = [11, 22, 33, 44, 55]
+split_column = "split"
+lm_rescoring = [false, true]
+
+[model_args]
+sample_rate = 16000
+n_mels = 80
+cnn_channels = [32, 64]
+bilstm_hidden = 256
+bilstm_layers = 3
+dropout = 0.2
+beam = 16
+
+[training]
+epochs = 50
+batch_size = 8
+learning_rate = 0.001
+gradient_accumulation_steps = 1
+early_stopping_patience = 5
+

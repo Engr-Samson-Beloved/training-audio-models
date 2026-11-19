@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cte442-asr"
+version = "0.1.0"
+description = "Group 2 CTE 442 reproducible speech-recognition research pipeline"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+analysis = ["matplotlib>=3.8", "numpy>=1.26"]
+audio = ["soundfile>=0.12", "scipy>=1.12"]
+classical = ["hmmlearn>=0.3", "librosa>=0.10", "numpy>=1.26", "scikit-learn>=1.4"]
+neural = ["torch>=2.2", "torchaudio>=2.2"]
+transformers = ["accelerate>=0.27", "datasets>=2.17", "evaluate>=0.4", "librosa>=0.10",
+                "soundfile>=0.12", "torch>=2.2", "transformers>=4.38,<5"]
+demo = ["streamlit>=1.31"]
+dev = ["pytest>=8", "ruff>=0.3"]
+all = [
+  "accelerate>=0.27", "datasets>=2.17", "evaluate>=0.4", "hmmlearn>=0.3",
+  "librosa>=0.10", "matplotlib>=3.8", "numpy>=1.26", "scikit-learn>=1.4",
+  "scipy>=1.12", "soundfile>=0.12", "streamlit>=1.31", "torch>=2.2",
+  "torchaudio>=2.2", "transformers>=4.38"
+]
+
+[project.scripts]
+cte442 = "cte442_asr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+

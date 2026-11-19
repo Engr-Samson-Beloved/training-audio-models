@@ -1,0 +1,111 @@
+Metadata-Version: 2.4
+Name: cte442-asr
+Version: 0.1.0
+Summary: Group 2 CTE 442 reproducible speech-recognition research pipeline
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Provides-Extra: analysis
+Requires-Dist: matplotlib>=3.8; extra == "analysis"
+Requires-Dist: numpy>=1.26; extra == "analysis"
+Provides-Extra: audio
+Requires-Dist: soundfile>=0.12; extra == "audio"
+Requires-Dist: scipy>=1.12; extra == "audio"
+Provides-Extra: classical
+Requires-Dist: hmmlearn>=0.3; extra == "classical"
+Requires-Dist: librosa>=0.10; extra == "classical"
+Requires-Dist: numpy>=1.26; extra == "classical"
+Requires-Dist: scikit-learn>=1.4; extra == "classical"
+Provides-Extra: neural
+Requires-Dist: torch>=2.2; extra == "neural"
+Requires-Dist: torchaudio>=2.2; extra == "neural"
+Provides-Extra: transformers
+Requires-Dist: accelerate>=0.27; extra == "transformers"
+Requires-Dist: datasets>=2.17; extra == "transformers"
+Requires-Dist: evaluate>=0.4; extra == "transformers"
+Requires-Dist: librosa>=0.10; extra == "transformers"
+Requires-Dist: soundfile>=0.12; extra == "transformers"
+Requires-Dist: torch>=2.2; extra == "transformers"
+Requires-Dist: transformers<5,>=4.38; extra == "transformers"
+Provides-Extra: demo
+Requires-Dist: streamlit>=1.31; extra == "demo"
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: ruff>=0.3; extra == "dev"
+Provides-Extra: all
+Requires-Dist: accelerate>=0.27; extra == "all"
+Requires-Dist: datasets>=2.17; extra == "all"
+Requires-Dist: evaluate>=0.4; extra == "all"
+Requires-Dist: hmmlearn>=0.3; extra == "all"
+Requires-Dist: librosa>=0.10; extra == "all"
+Requires-Dist: matplotlib>=3.8; extra == "all"
+Requires-Dist: numpy>=1.26; extra == "all"
+Requires-Dist: scikit-learn>=1.4; extra == "all"
+Requires-Dist: scipy>=1.12; extra == "all"
+Requires-Dist: soundfile>=0.12; extra == "all"
+Requires-Dist: streamlit>=1.31; extra == "all"
+Requires-Dist: torch>=2.2; extra == "all"
+Requires-Dist: torchaudio>=2.2; extra == "all"
+Requires-Dist: transformers>=4.38; extra == "all"
+
+# Group 2 CTE 442 — Speech Recognition Study
+
+Research question: **How much do pretrained speech models outperform a classical
+pipeline on Nigerian-accented English or a selected Nigerian language, and how much
+does fine-tuning on a small original corpus close the gap?**
+
+This repository implements the study protocol and its data pipeline. It contains no
+original recordings, consent records, transcripts, experiment metrics, or research
+conclusions. The generated `data/fixture/` material is labelled synthetic and exists
+only to smoke-test plumbing; it is not intelligible speech and must never be reported
+as corpus/model performance.
+
+## Quick start: tiny synthetic fixture
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+cte442 make-fixture
+cte442 validate --manifest data/fixture/manifest.csv --converted-dir data/fixture/audio_16k
+cte442 split --manifest data/fixture/manifest.csv --output data/fixture/splits.csv --seed 442
+cte442 smoke-predictions --manifest data/fixture/manifest.csv --splits data/fixture/splits.csv --output data/fixture/predictions.csv
+cte442 evaluate --manifest data/fixture/manifest.csv --splits data/fixture/splits.csv --predictions data/fixture/predictions.csv --output-dir results/fixture_smoke --bootstrap-samples 200 --seed 442
+cte442 plot --metrics results/fixture_smoke/utterance_metrics.csv --output-dir results/fixture_smoke/plots
+```
+
+Or run the same sequence with `./scripts/run_fixture.sh`. The fixture predictions are
+deliberately perturbed plumbing inputs, not the output of any ASR model.
+
+## Original-corpus workflow
+
+1. Obtain ethics/departmental approval and informed consent outside this repository.
+2. Copy consent-cleared recordings under `data/original/audio/` and populate a manifest
+   from `data/manifest_template.csv`. Do not put names or direct identifiers in it.
+3. Review transcriptions with `cte442 review --manifest ... --output ...`.
+4. Validate/convert, then create one frozen speaker-disjoint split file. Every model and
+   every seed must use that exact split file and test-speaker list.
+5. Install only the backend needed for an experiment, e.g. `pip install -e '.[classical]'`
+   or `pip install -e '.[neural,transformers]'`.
+6. Run `cte442 train --config configs/<experiment>.toml --manifest ... --splits ...` and
+   then `cte442 infer`, `cte442 evaluate`, and `cte442 plot`.
+
+See [STATUS.md](STATUS.md) for exact next-stage commands, limitations, and the distinction
+between implemented orchestration and compute/data-dependent training.
+
+## Study safeguards
+
+- `corpus_kind` is mandatory and must be `fixture`, `public`, or `original`.
+- Speaker IDs, not utterances, are assigned to train/dev/test; overlap is rejected.
+- The split artifact is reused across all comparisons.
+- Fine-tuning hour subsets are nested and speaker-aware; they are drawn only from train.
+- Five-seed aggregation reports mean, sample standard deviation, and 95% t confidence
+  intervals. Paired speaker bootstrap intervals are supported for WER/CER comparisons.
+- Timing and model-size fields are carried in every run record.
+- Empty/missing demographic values are reported as `unspecified`, never inferred.
+
+## Modules
+
+`manifest`, `audio`, `review`, `split`, `training`, `inference`, `evaluation`, `plots`,
+and `studies` are separate modules under `src/cte442_asr/`. Model adapters live under
+`src/cte442_asr/models/`; the Streamlit app is `src/cte442_asr/demo.py`.
+

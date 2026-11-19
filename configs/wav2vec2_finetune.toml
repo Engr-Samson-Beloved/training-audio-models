@@ -1,0 +1,21 @@
+experiment_id = "wav2vec2_finetune"
+model = "wav2vec2"
+mode = "fine_tune"
+language = "en"
+seeds = [11, 22, 33, 44, 55]
+split_column = "split"
+hours = [1, 2, 5, 10]
+lm_rescoring = [false, true]
+
+[model_args]
+checkpoint = "facebook/wav2vec2-large-960h-lv60-self"
+sample_rate = 16000
+freeze_feature_encoder = true
+
+[training]
+epochs = 20
+batch_size = 4
+learning_rate = 0.00003
+gradient_accumulation_steps = 4
+early_stopping_patience = 3
+

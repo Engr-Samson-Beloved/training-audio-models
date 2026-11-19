@@ -1,0 +1,13 @@
+experiment_id = "wav2vec2_zeroshot"
+model = "wav2vec2"
+mode = "zero_shot"
+language = "en"
+seeds = [11]
+split_column = "split"
+lm_rescoring = [false, true]
+
+[model_args]
+checkpoint = "facebook/wav2vec2-large-960h-lv60-self"
+sample_rate = 16000
+beam = 16
+
