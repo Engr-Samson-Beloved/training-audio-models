@@ -13,6 +13,7 @@ elif command -v python3.12 >/dev/null 2>&1; then
 else
   PYTHON_BIN="python3"
 fi
+export PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}"
 
 if [[ "$OFFLINE" == "1" ]]; then
   "$PYTHON_BIN" -m cte442_asr.cli import-slr70 --root "$SLR70_ROOT" --no-download

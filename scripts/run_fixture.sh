@@ -10,6 +10,7 @@ elif command -v python3.12 >/dev/null 2>&1; then
 else
   PYTHON_BIN="python3"
 fi
+export PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}"
 
 "$PYTHON_BIN" -m cte442_asr.cli make-fixture
 "$PYTHON_BIN" -m cte442_asr.cli validate --manifest data/fixture/manifest.csv --converted-dir data/fixture/audio_16k
