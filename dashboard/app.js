@@ -29,6 +29,8 @@ function render(data) {
   $('#datasetCards').innerHTML = datasetCard('fixture','Tiny fixture',d.fixture) + datasetCard('slr70','OpenSLR SLR70',d.slr70) + datasetCard('original','Group 2 recordings',d.original,true);
   $('#archiveChecklist').innerHTML = Object.entries(data.slr70_archives).map(([name,ok])=>`<div class="check"><span class="dot ${ok?'ok':''}"></span><b>${esc(name)}</b><span class="muted">${ok?'found':'place in data/public/slr70/raw/'}</span></div>`).join('');
   $('#experimentRows').innerHTML = data.experiments.map(x=>`<tr><td><b>${esc(x.id)}</b><br><span class="muted">${esc(x.file)}</span></td><td>${esc(x.model)}</td><td>${esc(x.mode)}</td><td>${x.seeds}</td><td>${x.hours.length?x.hours.join(', '):'—'}</td><td>${x.lm_rescoring.includes(true)?'Yes':'No'}</td></tr>`).join('');
+  const publicResults = data.completed_public_results || [];
+  $('#publicResultRows').innerHTML = publicResults.length ? publicResults.map(x=>`<tr><td><b>${esc(x.model)}</b></td><td>${x.training_hours ? `${x.training_hours} h` : 'zero-shot'}</td><td>${x.seeds}</td><td>${(x.wer*100).toFixed(2)}%</td><td>${(x.cer*100).toFixed(2)}%</td><td>${(x.wer_ci95[0]*100).toFixed(2)}%–${(x.wer_ci95[1]*100).toFixed(2)}%</td></tr>`).join('') : '<tr><td colspan="6" class="muted">No completed public-model results yet.</td></tr>';
   $('#plots').innerHTML = data.plots.map(url=>`<img src="${esc(url)}?t=${Date.now()}" alt="Fixture evaluation plot">`).join('') || '<p class="muted">Run the fixture simulation to create plots.</p>';
   $('#audioList').innerHTML = data.audio.map(x=>`<div class="audio-item"><strong>${esc(x.utterance_id)}</strong><span>${esc(x.transcript)}</span><audio controls preload="none" src="${esc(x.url)}"></audio></div>`).join('');
 }

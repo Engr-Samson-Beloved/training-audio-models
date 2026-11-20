@@ -54,6 +54,27 @@ def _fixture_audio() -> list[dict[str, str]]:
             for row in rows]
 
 
+def _completed_public_results() -> list[dict[str, object]]:
+    """Return completed overall public-corpus metrics, never fixture metrics."""
+    output = []
+    for path in sorted((PROJECT_ROOT / "results" / "slr70" / "evaluation").glob("*/seed_summary.csv")):
+        with path.open(newline="", encoding="utf-8-sig") as handle:
+            rows = list(csv.DictReader(handle))
+        overall = [row for row in rows if row.get("dimension") == "overall" and row.get("group") == "all"]
+        metrics = {row["metric"]: row for row in overall}
+        if "wer" not in metrics or "cer" not in metrics:
+            continue
+        output.append({
+            "model": metrics["wer"]["model"],
+            "training_hours": float(metrics["wer"].get("training_hours") or 0),
+            "seeds": int(metrics["wer"].get("n_seeds") or 0),
+            "wer": float(metrics["wer"]["mean"]),
+            "cer": float(metrics["cer"]["mean"]),
+            "wer_ci95": [float(metrics["wer"]["ci95_low"]), float(metrics["wer"]["ci95_high"])],
+        })
+    return output
+
+
 def project_status() -> dict[str, object]:
     plots = sorted((PROJECT_ROOT / "results/fixture_smoke/plots").glob("*.svg"))
     archives = {name: (PROJECT_ROOT / "data/public/slr70/raw" / name).exists()
@@ -70,6 +91,7 @@ def project_status() -> dict[str, object]:
         "experiments": _experiments(),
         "tools": {name: bool(shutil.which(name)) for name in ("python3.12", "ffmpeg", "sox")},
         "fixture_results_ready": (PROJECT_ROOT / "results/fixture_smoke/seed_summary.csv").exists(),
+        "completed_public_results": _completed_public_results(),
         "plots": ["/file/" + str(path.relative_to(PROJECT_ROOT)) for path in plots],
         "audio": _fixture_audio(),
     }

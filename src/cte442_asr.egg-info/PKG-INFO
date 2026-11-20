@@ -76,6 +76,24 @@ cte442 plot --metrics results/fixture_smoke/utterance_metrics.csv --output-dir r
 Or run the same sequence with `./scripts/run_fixture.sh`. The fixture predictions are
 deliberately perturbed plumbing inputs, not the output of any ASR model.
 
+## Visual research console
+
+The local dashboard has no third-party Python dependencies and keeps all data on this
+computer. It displays dataset readiness, experiment configurations, fixture plots/audio,
+and can rerun the safe fixture simulation.
+
+```bash
+./scripts/launch_dashboard.sh
+# Open http://127.0.0.1:8765
+
+# Or open this directly without a server:
+open dist/standalone.html
+```
+
+FFmpeg and SoX are recommended for inspecting and converting real recordings. The core
+dashboard and fixture pipeline remain available without Streamlit or PyPI access.
+The standalone view is read-only; use `./scripts/run_fixture.sh` to rerun the simulation.
+
 ## Original-corpus workflow
 
 1. Obtain ethics/departmental approval and informed consent outside this repository.
@@ -92,9 +110,32 @@ deliberately perturbed plumbing inputs, not the output of any ASR model.
 See [STATUS.md](STATUS.md) for exact next-stage commands, limitations, and the distinction
 between implemented orchestration and compute/data-dependent training.
 
+## OpenSLR SLR70 public development workflow
+
+SLR70 is imported only under `data/public/slr70/`. It is useful for integration checks and
+public-development comparisons, but it is not a substitute for the Group 2 original corpus.
+
+```bash
+# Downloads about 1.21 GB, verifies archive hashes, extracts, converts and freezes splits.
+./scripts/run_slr70_public.sh
+
+# If the two official ZIPs were downloaded manually into data/public/slr70/raw/:
+SLR70_OFFLINE=1 ./scripts/run_slr70_public.sh
+
+# After installing all model extras and allocating suitable compute:
+CTE442_RUN_MODE=full ./scripts/run_slr70_public.sh
+```
+
+The official source describes SLR70 as manually quality-checked Nigerian-English sentence
+recordings from volunteers in Lagos and London. Its index does not expose a per-utterance
+Lagos/London label, recording device, age, proficiency, or noise condition, so the importer
+stores those fields as `unspecified` instead of inventing them.
+
 ## Study safeguards
 
 - `corpus_kind` is mandatory and must be `fixture`, `public`, or `original`.
+- Public imports and original-corpus ingress use separate commands and directories:
+  `import-slr70` writes only public provenance; `import-original` rejects non-original rows.
 - Speaker IDs, not utterances, are assigned to train/dev/test; overlap is rejected.
 - The split artifact is reused across all comparisons.
 - Fine-tuning hour subsets are nested and speaker-aware; they are drawn only from train.

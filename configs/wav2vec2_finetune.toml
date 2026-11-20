@@ -4,7 +4,7 @@ mode = "fine_tune"
 language = "en"
 seeds = [11, 22, 33, 44, 55]
 split_column = "split"
-hours = [1, 2, 5, 10]
+hours = [1, 2]
 lm_rescoring = [false, true]
 
 [model_args]

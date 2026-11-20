@@ -1,10 +1,47 @@
 .venv/
+.env
+.env.*
+!.env.example
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 .DS_Store
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Local model/download caches and generated training artifacts
+.cache/
+.cache/**
+**/.cache/
+**/.cache/**
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.keras
+*.pkl
+*.pickle
+*.joblib
+*.egg-info/
+build/
+site-packages/
+venv/
+env/
+tmp/
+temp/
+
+# Generated/converted recordings and local corpus material
 data/fixture/audio/
 data/fixture/*.csv
+data/fixture/audio_16k/
 data/original/audio/
 data/original/*.csv
 data/public/slr70/raw/
@@ -15,6 +52,10 @@ data/public/slr70/*.json
 results/**
 !results/.gitkeep
 reports/generated/**
+reports/*validation*.csv
 models/
 checkpoints/
+
+# Generated visual build output (source remains under dashboard/)
+dist/
 

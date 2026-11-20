@@ -1,2 +1,3 @@
 [console_scripts]
 cte442 = cte442_asr.cli:main
+cte442-dashboard = cte442_asr.webapp:main
