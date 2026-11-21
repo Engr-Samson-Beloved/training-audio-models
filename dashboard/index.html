@@ -27,6 +27,7 @@
       <button class="tab active" data-panel="overview">Overview</button>
       <button class="tab" data-panel="datasets">Datasets</button>
       <button class="tab" data-panel="experiments">Experiments</button>
+      <button class="tab" data-panel="record">Record voices</button>
       <button class="tab" data-panel="results">Simulation</button>
     </nav>
 
@@ -51,6 +52,30 @@
     <section id="experiments" class="panel">
       <div class="section-heading"><div><p class="eyebrow">Configurations</p><h2>Independent experiment matrix</h2></div></div>
       <div class="table-wrap"><table><thead><tr><th>Experiment</th><th>Model</th><th>Mode</th><th>Seeds</th><th>Hours</th><th>LM ablation</th></tr></thead><tbody id="experimentRows"></tbody></table></div>
+    </section>
+
+    <section id="record" class="panel">
+      <div class="section-heading"><div><p class="eyebrow">Consent-cleared intake</p><h2>Record a voice sample for review</h2></div><span class="badge amber" id="recordQueue">0 PENDING REVIEW</span></div>
+      <aside class="warning record-warning"><strong>Before you record</strong><span>Use a pseudonymous participant ID - never a name, email, or phone number. Upload only after a signed consent record exists outside this dashboard. Recordings are queued for human review; they are not automatically used for training.</span></aside>
+      <div class="record-grid">
+        <form id="recordForm" class="surface recording-form">
+          <label class="consent"><input id="consentAck" name="consent_ack" type="checkbox" value="yes" required> I confirm that the participant has consented to this recording and that the consent document is stored securely outside this project.</label>
+          <div class="form-grid">
+            <label>Participant pseudonym<input name="speaker_id" required minlength="3" maxlength="80" pattern="[A-Za-z0-9_-]+" placeholder="e.g. g2_speaker_014"></label>
+            <label>Consent reference<input name="consent_reference" required minlength="3" maxlength="80" pattern="[A-Za-z0-9_-]+" placeholder="e.g. consent_014"></label>
+            <label>Language<select name="language"><option value="en">English</option></select></label>
+            <label>Speech type<select name="speech_type"><option value="prompted">Prompted sentence</option><option value="free">Free speech</option></select></label>
+            <label>Noise condition<select name="noise_condition"><option value="quiet">Quiet</option><option value="noisy">Noisy</option><option value="unspecified">Unspecified</option></select></label>
+            <label>Accent region (optional)<input name="accent_region" maxlength="80" placeholder="or leave blank"></label>
+          </div>
+          <label>Exact spoken transcript<textarea name="transcript" required maxlength="1000" placeholder="Enter the words the participant will say exactly."></textarea></label>
+          <div class="record-controls"><button id="startRecording" type="button" class="primary" disabled>Start recording</button><button id="stopRecording" type="button" class="secondary" disabled>Stop</button><button id="discardRecording" type="button" class="secondary" disabled>Discard</button></div>
+          <div id="recordStatus" class="record-status" role="status">Consent acknowledgement is required before recording.</div>
+          <audio id="recordPreview" controls hidden></audio>
+          <button id="submitRecording" type="submit" class="primary" disabled>Submit for review</button>
+        </form>
+        <article class="surface recorder-guide"><h3>Required review path</h3><ol><li>Obtain informed consent outside the app.</li><li>Record and submit the sample with an exact transcript.</li><li>Review transcript quality and remove any identifiers.</li><li>Validate and convert audio to 16 kHz mono.</li><li>Add only approved rows to the original-corpus manifest.</li><li>Freeze speaker-disjoint splits before training.</li></ol><p class="muted">This local intake accepts WebM, OGG, M4A, or WAV recordings up to <span id="recordLimit">25</span> MB. Use a private authenticated deployment with encrypted storage before collecting recordings from the public internet.</p></article>
+      </div>
     </section>
 
     <section id="results" class="panel">

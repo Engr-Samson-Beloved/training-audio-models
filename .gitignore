@@ -44,6 +44,7 @@ data/fixture/*.csv
 data/fixture/audio_16k/
 data/original/audio/
 data/original/*.csv
+data/original/incoming/
 data/public/slr70/raw/
 data/public/slr70/extracted/
 data/public/slr70/audio_16k/
