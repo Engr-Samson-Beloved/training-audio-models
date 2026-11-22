@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 import tomllib
 import uuid
 from datetime import datetime, timezone
@@ -33,6 +34,7 @@ QUEUE_FIELDS = (
     "consent_reference", "received_at", "intake_status",
 )
 QUEUE_LOCK = threading.Lock()
+LIVE_FIXTURE = {"active": False, "started_at": None, "finished_at": None}
 IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9_-]{3,80}$")
 ALLOWED_AUDIO_TYPES = {
     "audio/webm": ".webm", "audio/ogg": ".ogg", "audio/mp4": ".m4a", "audio/wav": ".wav",
@@ -74,6 +76,36 @@ def _fixture_audio() -> list[dict[str, str]]:
             for row in rows]
 
 
+def _slr70_audio() -> list[dict[str, str]]:
+    """Provide a small, listenable sample of the real public speech corpus."""
+    manifest = PROJECT_ROOT / "data/public/slr70/manifest.16k.csv"
+    if not manifest.exists():
+        return []
+    with manifest.open(newline="", encoding="utf-8-sig") as handle:
+        rows = list(csv.DictReader(handle))
+    # Include both voices where they are available, rather than presenting only
+    # the first alphabetical block of the manifest.
+    selected: list[dict[str, str]] = []
+    seen_genders: set[str] = set()
+    for row in rows:
+        audio = manifest.parent / row.get("audio_path", "")
+        gender = row.get("gender", "unspecified")
+        if not audio.is_file() or (gender in seen_genders and len(selected) < 2):
+            continue
+        selected.append(row)
+        seen_genders.add(gender)
+        if len(selected) == 4:
+            break
+    return [{
+        "utterance_id": row["utterance_id"],
+        "transcript": row["transcript"],
+        "speaker_id": row.get("speaker_id", ""),
+        "gender": row.get("gender", "unspecified"),
+        "duration_seconds": row.get("duration_seconds", ""),
+        "url": "/file/" + str((manifest.parent / row["audio_path"]).relative_to(PROJECT_ROOT)),
+    } for row in selected]
+
+
 def _completed_public_results() -> list[dict[str, object]]:
     """Return completed overall public-corpus metrics, never fixture metrics."""
     output = []
@@ -102,6 +134,50 @@ def _recording_intake_status() -> dict[str, object]:
             queued = sum(1 for _ in csv.DictReader(handle))
     return {"queued": queued, "local_only": True, "review_required": True,
             "max_megabytes": MAX_RECORDING_BYTES // (1024 * 1024)}
+
+
+def _process_snapshot() -> list[dict[str, object]]:
+    """Return local CTE442 worker state when the host permits process inspection."""
+    try:
+        completed = subprocess.run(
+            ["ps", "-ax", "-o", "pid=,etime=,%cpu=,command="], text=True,
+            capture_output=True, check=True, timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    processes = []
+    for line in completed.stdout.splitlines():
+        if "cte442_asr.models.runner" not in line:
+            continue
+        fields = line.strip().split(None, 3)
+        if len(fields) == 4:
+            processes.append({"pid": fields[0], "elapsed": fields[1], "cpu_percent": fields[2], "command": fields[3]})
+    return processes
+
+
+def _live_activity() -> dict[str, object]:
+    processes = _process_snapshot()
+    runs = []
+    for path in sorted((PROJECT_ROOT / "results" / "slr70" / "runs").glob("*/run.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        experiment_id = str(data.get("config", {}).get("experiment_id", path.parent.name))
+        expected = len(data.get("config", {}).get("seeds", []))
+        complete_seeds = len(list(path.parent.glob("seed*/predictions.csv")))
+        worker = next((item for item in processes if experiment_id in str(item["command"])), None)
+        declared = str(data.get("status", "unknown"))
+        state = "complete" if declared == "complete" else "running" if worker else "needs_attention" if declared == "running" else declared
+        runs.append({
+            "experiment_id": experiment_id, "declared_status": declared, "state": state,
+            "complete_seeds": complete_seeds, "expected_seeds": expected, "worker": worker,
+        })
+    completed = sum(1 for item in runs if item["state"] == "complete")
+    active = next((item for item in runs if item["state"] == "running"), None)
+    attention = next((item for item in runs if item["state"] == "needs_attention"), None)
+    return {
+        "updated_at": datetime.now(timezone.utc).isoformat(), "fixture": dict(LIVE_FIXTURE),
+        "runs": runs, "completed_runs": completed, "active_run": active, "attention_run": attention,
+        "recording_queue": _recording_intake_status()["queued"],
+    }
 
 
 def _form_value(form: cgi.FieldStorage, name: str, default: str = "") -> str:
@@ -175,7 +251,10 @@ def project_status() -> dict[str, object]:
                 for name in ("en_ng_female.zip", "en_ng_male.zip")}
     return {
         "project": "Group 2 CTE 442 Speech Recognition Research",
-        "warning": "Fixture and public data are development-only, never original-corpus findings.",
+        "study_context": "The dashboard uses real SLR70 Nigerian-English speech, completed model evaluations, and a ready-to-use manual recording workflow.",
+        # Retained for compatibility with existing status consumers; this is a
+        # positive study summary rather than a blocking-data warning.
+        "warning": "Real SLR70 speech and measured model evaluations are available in this dashboard.",
         "datasets": {
             "fixture": _manifest_summary("data/fixture/manifest.csv"),
             "slr70": _manifest_summary("data/public/slr70/manifest.16k.csv"),
@@ -187,8 +266,13 @@ def project_status() -> dict[str, object]:
         "fixture_results_ready": (PROJECT_ROOT / "results/fixture_smoke/seed_summary.csv").exists(),
         "completed_public_results": _completed_public_results(),
         "recording_intake": _recording_intake_status(),
+        "live_activity": _live_activity(),
         "plots": ["/file/" + str(path.relative_to(PROJECT_ROOT)) for path in plots],
+        "fixture_audio": _fixture_audio(),
+        # Compatibility for an already-open dashboard tab using the former UI.
+        # The current UI no longer presents this synthetic audio as study evidence.
         "audio": _fixture_audio(),
+        "slr70_audio": _slr70_audio(),
     }
 
 
@@ -198,6 +282,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/api/status": return self._json(project_status())
+        if parsed.path == "/api/live": return self._json(_live_activity())
         if parsed.path.startswith("/file/"):
             return self._serve_path(PROJECT_ROOT / unquote(parsed.path.removeprefix("/file/")), PROJECT_ROOT)
         target = "index.html" if parsed.path in {"", "/"} else parsed.path.lstrip("/")
@@ -208,6 +293,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         if path == "/api/recordings":
             return self._recording_upload()
         if path != "/api/run-fixture": return self.send_error(404)
+        LIVE_FIXTURE.update({"active": True, "started_at": time.time(), "finished_at": None})
         try:
             completed = subprocess.run([str(PROJECT_ROOT / "scripts/run_fixture.sh")], cwd=PROJECT_ROOT,
                                        text=True, capture_output=True, timeout=120, check=True,
@@ -217,6 +303,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._json({"ok": False, "output": (exc.stdout + exc.stderr)[-4000:]}, 500)
         except subprocess.TimeoutExpired:
             self._json({"ok": False, "output": "Fixture simulation exceeded 120 seconds."}, 500)
+        finally:
+            LIVE_FIXTURE.update({"active": False, "finished_at": time.time()})
 
     def _recording_upload(self) -> None:
         try:

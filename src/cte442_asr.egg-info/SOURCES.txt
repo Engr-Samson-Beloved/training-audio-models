@@ -31,4 +31,5 @@ src/cte442_asr/models/runner.py
 tests/test_evaluation.py
 tests/test_manifest_split.py
 tests/test_pipeline.py
+tests/test_recording_intake.py
 tests/test_slr70.py

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>CTE 442 ASR Research Console</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/revisions.css">
 </head>
 <body>
   <header class="topbar">
@@ -14,21 +15,22 @@
   <main>
     <section class="hero">
       <div>
-        <p class="eyebrow">Speech recognition study</p>
-        <h1>Compare classical and pretrained speech models with clean provenance.</h1>
-        <p class="lede">Inspect datasets, verify the reproducible pipeline, and prepare experiments without confusing development data with the original Group 2 corpus.</p>
+        <p class="eyebrow">Nigerian-English speech recognition study</p>
+        <h1>Hear the real speech data. See what each model achieved.</h1>
+        <p class="lede">Listen to real SLR70 recordings, read their exact transcripts, compare measured model results, and add consented recordings for the next training stage.</p>
       </div>
-      <button id="runFixture" class="primary">Run fixture simulation</button>
+      <button id="openLiveDemo" class="primary">See live study activity</button>
     </section>
 
-    <aside class="warning"><strong>Research boundary</strong><span id="warningText">Fixture and public data are development-only.</span></aside>
+    <aside class="study-note"><strong>Data in use</strong><span id="studyContext">Loading study data…</span></aside>
 
     <nav class="tabs" aria-label="Dashboard sections">
       <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="live">Live demo</button>
       <button class="tab" data-panel="datasets">Datasets</button>
       <button class="tab" data-panel="experiments">Experiments</button>
       <button class="tab" data-panel="record">Record voices</button>
-      <button class="tab" data-panel="results">Simulation</button>
+      <button class="tab" data-panel="results">System check</button>
     </nav>
 
     <section id="overview" class="panel active">
@@ -38,13 +40,36 @@
         <article class="surface"><h3>Study comparison</h3><div class="pipeline">
           <span>MFCC + GMM-HMM</span><span>CNN-BiLSTM CTC</span><span>wav2vec 2.0</span><span>Whisper-small</span>
         </div></article>
-        <article class="surface"><h3>Fine-tuning ladder</h3><div class="hours"><b>1h</b><b>2h</b><b>5h</b><b>10h</b></div><p class="muted">Nested training subsets. Identical held-out speakers across every comparison.</p></article>
+        <article class="surface"><h3>Evaluation path</h3><div class="hours"><b>Audio</b><b>Text</b><b>Model</b><b>WER</b></div><p class="muted">Each real recording is paired with its transcript. Model output is compared with that text to calculate word and character error rates.</p></article>
       </div>
-      <article class="surface setup"><h3>Completed public-development results</h3><p class="muted">SLR70 results only. They are not findings from the Group 2 original corpus.</p><div class="table-wrap"><table><thead><tr><th>Model</th><th>Training</th><th>Seeds</th><th>WER</th><th>CER</th><th>95% t interval (WER)</th></tr></thead><tbody id="publicResultRows"></tbody></table></div></article>
+      <article class="surface setup"><h3>Completed results on real SLR70 speech</h3><p class="muted">Lower WER and CER are better. These figures come from the saved evaluation outputs for the public Nigerian-English dataset.</p><div class="table-wrap"><table><thead><tr><th>Model</th><th>Training</th><th>Seeds</th><th>WER</th><th>CER</th><th>95% t interval (WER)</th></tr></thead><tbody id="publicResultRows"></tbody></table></div></article>
+      <article class="surface setup"><div class="section-heading compact-heading"><div><p class="eyebrow">Listen and verify</p><h3>Real SLR70 speech samples</h3></div><span class="muted">Audio + reference transcript</span></div><p class="muted">Press play to hear an actual recording used by the project. The moving bars respond while that sample is playing; the text beneath is the reviewed reference transcript used for evaluation.</p><div id="slr70AudioList" class="audio-list real-audio-list"></div></article>
+    </section>
+
+    <section id="live" class="panel">
+      <div class="section-heading"><div><p class="eyebrow">Live project telemetry</p><h2>Watch the research pipeline move</h2></div><span id="liveConnection" class="badge gray">CONNECTING</span></div>
+      <p class="lede live-lede">This display polls the local project every two seconds. It shows saved outputs, recordings waiting for review, and any model workers currently running on this computer.</p>
+      <div class="live-grid">
+        <article class="surface live-canvas">
+          <div class="pulse-orb" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div id="liveHeadline" class="live-headline">Connecting to the local pipeline...</div>
+          <div id="liveDetail" class="muted">Checking datasets, experiment records, and local workers.</div>
+          <div id="pipelineSteps" class="pipeline-steps"></div>
+        </article>
+        <article class="surface live-summary">
+          <h3>What is happening now</h3>
+          <div class="live-stat"><span>Public SLR70 runs complete</span><b id="liveCompleted">-</b></div>
+          <div class="live-stat"><span>Recording samples awaiting review</span><b id="liveQueue">-</b></div>
+          <div class="live-stat"><span>Last telemetry refresh</span><b id="liveUpdated">-</b></div>
+          <button id="openRealAudio" class="primary">Listen to real SLR70 speech</button>
+          <p class="muted">The Overview tab contains real recordings, their reference transcripts, and the measured results.</p>
+        </article>
+      </div>
+      <article class="surface run-monitor"><h3>Experiment monitor</h3><div class="table-wrap"><table><thead><tr><th>Experiment</th><th>Saved seed outputs</th><th>Live state</th><th>Worker details</th></tr></thead><tbody id="liveRunRows"></tbody></table></div></article>
     </section>
 
     <section id="datasets" class="panel">
-      <div class="section-heading"><div><p class="eyebrow">Data lanes</p><h2>Strictly separated sources</h2></div></div>
+      <div class="section-heading"><div><p class="eyebrow">Data used in this study</p><h2>Real speech, ready for exploration and collection</h2></div></div>
       <div class="dataset-grid" id="datasetCards"></div>
       <article class="surface setup"><h3>SLR70 archive checklist</h3><div id="archiveChecklist"></div><code>SLR70_OFFLINE=1 ./scripts/run_slr70_public.sh</code></article>
     </section>
@@ -79,13 +104,14 @@
     </section>
 
     <section id="results" class="panel">
-      <div class="section-heading"><div><p class="eyebrow">Safe simulation</p><h2>Fixture pipeline inspection</h2></div><span class="badge amber">NOT ASR RESULTS</span></div>
-      <div id="runOutput" class="console">Run the fixture simulation to validate file flow, scoring, confidence intervals, and plots.</div>
+      <div class="section-heading"><div><p class="eyebrow">Technical system check</p><h2>Verify the local workflow</h2></div><span class="badge gray">OPTIONAL</span></div>
+      <p class="lede live-lede">This command checks the local data flow, scoring code, confidence-interval calculation, and plot generation. The main study evidence is shown in the real SLR70 sections above.</p>
+      <button id="runFixture" class="primary">Run system check</button>
+      <div id="runOutput" class="console">Run the system check to validate file flow, scoring, confidence intervals, and plots.</div>
       <div class="plots" id="plots"></div>
-      <article class="surface"><h3>Fixture audio</h3><p class="muted">Synthetic tones only. These clips are not speech and never support research conclusions.</p><div id="audioList" class="audio-list"></div></article>
     </section>
   </main>
-  <footer>Local dashboard · data remains on this computer · Group 2 CTE 442</footer>
+  <footer>Local dashboard · speech data and recordings remain on this computer · CTE 442</footer>
   <script src="/app.js"></script>
 </body>
 </html>
